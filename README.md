@@ -4,12 +4,9 @@ A modern Neovim plugin for enhanced mark management with a beautiful popup inter
 
 ## Demo
 
-> **Adding a video demo:** Record your screen using tools like:
-> - **asciinema** (terminal recording): `asciinema rec demo.cast` then upload to asciinema.org
-> - **screen2gif** or **LICEcap** for GIF recording
-> - **OBS Studio** for MP4, then convert to GIF or upload to GitHub releases
-> 
-> Embed with: `![Demo](https://user-images.githubusercontent.com/your-demo.gif)` or `[![asciicast](https://asciinema.org/a/your-id.svg)](https://asciinema.org/a/your-id)`
+https://github.com/user-attachments/assets/marko.mov
+
+*Demonstration of both popup mode (blue border) and direct mode (red border) with instant mark jumping.*
 
 ## Features
 
