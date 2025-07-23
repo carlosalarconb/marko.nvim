@@ -4,7 +4,7 @@ A modern Neovim plugin for enhanced mark management with a beautiful popup inter
 
 ## Demo
 
-![Demo Video](./marko.mp4)
+![Demo Video](https://github.com/developedbyed/marko.nvim/releases/download/demo/marko.mp4)
 
 *Demonstration of both popup mode (blue border) and direct mode (red border) with instant mark jumping.*
 
