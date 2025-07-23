@@ -14,6 +14,25 @@ end, {
 	desc = "Show marks in a popup window",
 })
 
+-- Register navigation mode commands
+vim.api.nvim_create_user_command("MarkoToggleMode", function()
+	require("marko").toggle_navigation_mode()
+end, {
+	desc = "Toggle between popup and direct navigation modes",
+})
+
+vim.api.nvim_create_user_command("MarkoDirectMode", function()
+	require("marko").enable_direct_mode()
+end, {
+	desc = "Enable direct navigation mode",
+})
+
+vim.api.nvim_create_user_command("MarkoPopupMode", function()
+	require("marko").enable_popup_mode()
+end, {
+	desc = "Enable popup navigation mode",
+})
+
 -- Set up default keymap (configurable)
 vim.defer_fn(function()
 	local config = require("marko.config").get()

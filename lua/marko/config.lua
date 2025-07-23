@@ -7,10 +7,17 @@ local default_config = {
   title = " Marko ",
   -- Default keymap to open popup (set to false to disable)
   default_keymap = "'",
+  -- Navigation mode: "popup" (current) or "direct" (jump directly to marks)
+  navigation_mode = "popup",
   keymaps = {
     delete = "d",
     goto = "<CR>",
     close = "<Esc>",
+  },
+  -- Direct mode configuration
+  direct_mode = {
+    -- Key to toggle between popup and direct modes
+    mode_toggle_key = "<leader>mm",
   },
   exclude_marks = { "'", "`", "^", ".", "[", "]", "<", ">" },
   -- Show buffer marks from all buffers or just current buffer
@@ -45,8 +52,8 @@ local default_config = {
   -- Custom highlight groups (users can override these)
   highlights = {
     -- Window highlights
-    normal = { link = "Normal" },
-    border = { link = "FloatBorder" },
+    normal = { bg = "NONE" },                       -- Transparent background
+    border = { fg = "#5C6370", bg = "NONE" },       -- Gray border with transparent bg
     title = { fg = "#E5C07B", bold = true },        -- Yellow/gold for title
     cursor_line = { bg = "#3E4451" },
     
@@ -67,6 +74,15 @@ local default_config = {
     icon_buffer = { fg = "#61AFEF" },               -- Blue for buffer icons
     icon_global = { fg = "#E06C75" },               -- Red for global icons
     icon_file = { fg = "#D19A66" },                 -- Orange for file icons
+    
+    -- Mode-specific highlights
+    popup_mode_border = { fg = "#61AFEF", bg = "NONE" },                   -- Blue border in popup mode
+    popup_mode_title = { fg = "#61AFEF", bold = true },                    -- Blue title in popup mode  
+    popup_mode_status = { fg = "#61AFEF", italic = true },                 -- Blue status in popup mode
+    
+    direct_mode_title = { fg = "#E06C75", bold = true },                   -- Red for direct mode title
+    direct_mode_border = { fg = "#E06C75", bg = "NONE" },                  -- Red border in direct mode
+    direct_mode_status = { fg = "#E06C75", italic = true },                -- Red status in direct mode
   }
 }
 
@@ -101,6 +117,15 @@ local function setup_highlights()
     MarkoIconBuffer = highlights.icon_buffer,
     MarkoIconGlobal = highlights.icon_global,
     MarkoIconFile = highlights.icon_file,
+    
+    -- Mode-specific highlights
+    MarkoPopupModeBorder = highlights.popup_mode_border,
+    MarkoPopupModeTitle = highlights.popup_mode_title,
+    MarkoPopupModeStatus = highlights.popup_mode_status,
+    
+    MarkoDirectModeTitle = highlights.direct_mode_title,
+    MarkoDirectModeBorder = highlights.direct_mode_border,
+    MarkoDirectModeStatus = highlights.direct_mode_status,
   }
   
   -- Apply highlight groups

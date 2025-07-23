@@ -15,11 +15,23 @@ function M.setup(opts)
     require('marko.virtual').setup_autocmds()
   end
   
-  -- Setup default keymap if enabled
+  -- Setup navigation mode
+  if config.navigation_mode == "direct" then
+    require('marko.direct').setup_keymaps()
+  end
+  
+  -- Setup default keymap if enabled (always opens popup for mode selection)
   if config.default_keymap then
     vim.keymap.set('n', config.default_keymap, function()
       M.toggle_marks()
     end, { desc = 'Toggle marks popup' })
+  end
+  
+  -- Setup mode toggle keymap
+  if config.direct_mode.mode_toggle_key then
+    vim.keymap.set('n', config.direct_mode.mode_toggle_key, function()
+      M.toggle_navigation_mode()
+    end, { desc = 'Toggle navigation mode (popup/direct)' })
   end
   
   -- Setup autocommands for theme changes
@@ -66,6 +78,76 @@ end
 -- Refresh virtual marks in current buffer
 function M.refresh_virtual_marks()
   require('marko.virtual').refresh_buffer_marks()
+end
+
+-- Toggle between popup and direct navigation modes
+function M.toggle_navigation_mode()
+  local config = require('marko.config').get()
+  local direct = require('marko.direct')
+  
+  if config.navigation_mode == "popup" then
+    -- Switch to direct mode
+    config.navigation_mode = "direct"
+    -- Force cleanup first, then setup
+    direct.remove_keymaps()
+    vim.defer_fn(function()
+      direct.setup_keymaps()
+    end, 10)
+    vim.notify("Switched to direct navigation mode", vim.log.levels.INFO, {
+      title = "Marko",
+      timeout = 2000,
+    })
+  else
+    -- Switch to popup mode
+    config.navigation_mode = "popup"
+    -- Force cleanup of direct mode keymaps
+    direct.remove_keymaps()
+    vim.notify("Switched to popup navigation mode", vim.log.levels.INFO, {
+      title = "Marko", 
+      timeout = 2000,
+    })
+  end
+end
+
+-- Force enable direct mode
+function M.enable_direct_mode()
+  local config = require('marko.config').get()
+  local direct = require('marko.direct')
+  
+  if config.navigation_mode ~= "direct" then
+    config.navigation_mode = "direct"
+    -- Force cleanup first, then setup
+    direct.remove_keymaps()
+    vim.defer_fn(function()
+      direct.setup_keymaps()
+    end, 10)
+    vim.notify("Direct navigation mode enabled", vim.log.levels.INFO, {
+      title = "Marko",
+      timeout = 2000,
+    })
+  end
+end
+
+-- Force enable popup mode
+function M.enable_popup_mode()
+  local config = require('marko.config').get()
+  local direct = require('marko.direct')
+  
+  if config.navigation_mode ~= "popup" then
+    config.navigation_mode = "popup"
+    -- Force cleanup of direct mode keymaps
+    direct.remove_keymaps()
+    vim.notify("Popup navigation mode enabled", vim.log.levels.INFO, {
+      title = "Marko",
+      timeout = 2000,
+    })
+  end
+end
+
+-- Get current navigation mode
+function M.get_navigation_mode()
+  local config = require('marko.config').get()
+  return config.navigation_mode
 end
 
 
