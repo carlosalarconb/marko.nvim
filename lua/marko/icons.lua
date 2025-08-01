@@ -81,9 +81,19 @@ function M.format_mark_line(mark, config)
     filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":~:.")
   end
   
-  -- Truncate long filenames
+  -- Truncate long filenames - show end of path first
   if #filename > config.columns.filename then
-    filename = filename:sub(1, config.columns.filename - 3) .. "..."
+    local max_length = config.columns.filename - 3 -- Account for "..."
+    local start_pos = #filename - max_length + 1
+    local truncated = filename:sub(start_pos)
+    
+    -- Find the first directory separator to avoid cutting in the middle of a directory name
+    local first_slash = truncated:find("/")
+    if first_slash then
+      truncated = truncated:sub(first_slash + 1)
+    end
+    
+    filename = "..." .. truncated
   end
   
   -- Create formatted line without mark type icon
