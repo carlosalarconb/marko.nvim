@@ -24,7 +24,7 @@ https://github.com/user-attachments/assets/ed8e6942-fbd0-44d0-8f35-fcb1c9cdb6fb
 
 ```lua
 {
-  'developedbyed/marko.nvim',
+  'carlosalarconb/marko.nvim',
   config = function()
     require('marko').setup({
       width = 100,
@@ -40,7 +40,7 @@ https://github.com/user-attachments/assets/ed8e6942-fbd0-44d0-8f35-fcb1c9cdb6fb
 
 ```lua
 use {
-  'developedbyed/marko.nvim',
+  'carlosalarconb/marko.nvim',
   config = function()
     require('marko').setup()
   end
@@ -50,7 +50,7 @@ use {
 ### Using [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```vim
-Plug 'developedbyed/marko.nvim'
+Plug 'carlosalarconb/marko.nvim'
 ```
 
 ## Usage
