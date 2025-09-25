@@ -9,15 +9,26 @@ function M.is_open()
   return popup_win and vim.api.nvim_win_is_valid(popup_win)
 end
 
+local function get_repeater_line()
+  local config = require("marko.config").get()
+  local width = config.width
+
+  if width < 80 then
+    width = 80
+  end
+
+  return string.rep("─", width)
+end
+
 -- Create shadow window for depth effect
 local function create_shadow(width, height, row, col)
   if not require("marko.config").get().shadow then
     return nil
   end
-  
+
   local shadow_buf = vim.api.nvim_create_buf(false, true)
   vim.bo[shadow_buf].bufhidden = "wipe"
-  
+
   local shadow_win = vim.api.nvim_open_win(shadow_buf, false, {
     relative = "editor",
     width = width,
@@ -28,11 +39,11 @@ local function create_shadow(width, height, row, col)
     focusable = false,
     zindex = 1  -- Behind main window
   })
-  
+
   -- Set shadow appearance
   vim.wo[shadow_win].winhl = "Normal:Normal"
   vim.wo[shadow_win].winblend = 80
-  
+
   return shadow_win
 end
 
@@ -74,7 +85,8 @@ function M.create_popup()
   shadow_win = create_shadow(width, height, row, col)
   
   -- Use just the base title for the window
-  local window_title = config.title
+    local mode_text = config.navigation_mode == "direct" and "Direct" or "Popup"
+  local window_title = config.title .. "- " .. mode_text .. " " 
 
   -- Create main window
   popup_win = vim.api.nvim_open_win(popup_buf, true, {
@@ -127,26 +139,25 @@ local function generate_header(marks)
       global_count = global_count + 1
     end
   end
-  
+
   -- Mode indicator with centered alignment
   local mode_text = config.navigation_mode == "direct" and "Direct" or "Popup"
   local mode_line = string.format("%s%s", string.rep(" ", math.floor((80 - #mode_text) / 2)), mode_text)
-  
+
   local stats = string.format("  %d Global %s %d Buffer", 
     global_count, icons.icons.separator, buffer_count)
-  
+
   return {
-    "",  -- Empty line for spacing
-    mode_line,  -- Mode indicator line
+    "",
     stats,
-    string.rep("─", 80),  -- Separator line (wider for better coverage)
+    get_repeater_line(),
   }
 end
 
 -- Generate column headers that align with mark content
 local function generate_column_headers()
   local icons = require("marko.icons")
-  
+
   -- Match the exact format from icons.format_mark_line:
   -- mark_icon + mark + separator + line + separator + file_icon + filename + content
   local header_line = string.format("  %s %s %4s %s %s",
@@ -156,10 +167,10 @@ local function generate_column_headers()
     icons.icons.separator, -- Same separator
     "File"               -- Combined file and content
   )
-  
+
   return {
     header_line,
-    string.rep("─", 80),  -- Separator line
+    get_repeater_line(),
   }
 end
 
@@ -171,18 +182,17 @@ local function generate_status_bar()
   -- Show different hints based on navigation mode
   local status_text = ""
   if config.navigation_mode == "popup" then
-    status_text = string.format("  J/K ↕  D %s  Esc/' %s  ; - Direct Mode", 
+    status_text = string.format("  j/k ↕  d %s  Esc/' %s  ; Direct Mode", 
       icons.icons.delete,
       icons.icons.escape)
   else
-    status_text = string.format("  Press mark key to jump  Esc/' %s  ; - Popup Mode", 
+    status_text = string.format("  Press mark key to jump  Esc/' %s  ; Popup Mode", 
       icons.icons.escape)
   end
   
   return {
-    string.rep("─", 60),  -- Separator line
+        get_repeater_line(),
     status_text,
-    ""  -- Empty line for spacing
   }
 end
 
@@ -192,47 +202,47 @@ function M.populate_buffer(marks)
   local icons = require("marko.icons")
   local ns_id = require("marko.config").get_namespace()
   local lines = {}
-  
+
   -- Add header
   local header_lines = generate_header(marks)
   for _, line in ipairs(header_lines) do
     table.insert(lines, line)
   end
-  
+
   -- Add column headers
   local column_header_lines = generate_column_headers()
   for _, line in ipairs(column_header_lines) do
     table.insert(lines, line)
   end
-  
+
   -- Add marks content
   if #marks == 0 then
-    table.insert(lines, "    No marks found")
+    table.insert(lines, "  No marks found")
   else
     for i, mark in ipairs(marks) do
       local formatted_line = icons.format_mark_line(mark, config)
       table.insert(lines, "  " .. formatted_line)  -- Add padding
     end
   end
-  
+
   -- Add status bar
   local status_lines = generate_status_bar()
   for _, line in ipairs(status_lines) do
     table.insert(lines, line)
   end
-  
+
   vim.api.nvim_buf_set_lines(popup_buf, 0, -1, false, lines)
   vim.bo[popup_buf].modifiable = false
-  
+
   -- Store marks data in buffer variable for keymap access
   -- Need to adjust indexing since we added header lines
   local marks_start_line = #header_lines + #column_header_lines 
   vim.b[popup_buf].marks_data = marks
   vim.b[popup_buf].marks_start_line = marks_start_line
-  
+
   -- Apply syntax highlighting
   M.apply_highlighting(marks, marks_start_line)
-  
+
   -- Position cursor on first mark line (if any marks exist)
   if #marks > 0 then
     vim.api.nvim_win_set_cursor(popup_win, {marks_start_line + 1, 0})
