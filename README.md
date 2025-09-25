@@ -24,7 +24,7 @@ https://github.com/user-attachments/assets/ed8e6942-fbd0-44d0-8f35-fcb1c9cdb6fb
 
 ```lua
 {
-  'carlosalarconb/marko.nvim',
+  'developedbyed/marko.nvim',
   config = function()
     require('marko').setup({
       width = 100,
@@ -40,7 +40,7 @@ https://github.com/user-attachments/assets/ed8e6942-fbd0-44d0-8f35-fcb1c9cdb6fb
 
 ```lua
 use {
-  'carlosalarconb/marko.nvim',
+  'developedbyed/marko.nvim',
   config = function()
     require('marko').setup()
   end
@@ -50,7 +50,7 @@ use {
 ### Using [vim-plug](https://github.com/junegunn/vim-plug)
 
 ```vim
-Plug 'carlosalarconb/marko.nvim'
+Plug 'developedbyed/marko.nvim'
 ```
 
 ## Usage
@@ -58,15 +58,18 @@ Plug 'carlosalarconb/marko.nvim'
 ### Basic Usage
 
 1. **Set marks** in your files:
+
    ```vim
    ma    " Set buffer mark 'a'
    mA    " Set global mark 'A'
    ```
 
 2. **Open the marks popup**:
+
    ```vim
    :Marko
    ```
+
    Or use the default keymap: `"`
 
 3. **Navigate in the popup**:
@@ -82,7 +85,7 @@ Direct mode allows instant mark jumping without cursor navigation. The popup dis
 
 1. **Enable direct mode**:
    - Press `;` in the popup, or
-   - Use command: `:MarkoDirectMode`, or 
+   - Use command: `:MarkoDirectMode`, or
    - Use the configured toggle keymap
 
 2. **Navigate directly** (popup must remain open):
@@ -99,6 +102,7 @@ Direct mode allows instant mark jumping without cursor navigation. The popup dis
 ### Virtual Text
 
 When enabled, marks are displayed as virtual text in your code:
+
 - Set a mark with `ma`, `mB`, etc. and see the indicator appear immediately
 - Virtual text shows both buffer marks (blue) and global marks (red)
 - Toggle virtual text on/off with `:MarkoToggleVirtual`
@@ -110,19 +114,19 @@ require('marko').setup({
   -- Popup window dimensions
   width = 100,
   height = 100,
-  
+
   -- Border style: 'rounded', 'single', 'double', 'solid', 'shadow'
   border = "rounded",
-  
+
   -- Popup title
   title = " Marks ",
-  
+
   -- Default keymap to open popup (set to false to disable)
   default_keymap = '"',
-  
+
   -- Navigation mode: "popup" (default) or "direct" (jump directly to marks)
   navigation_mode = "popup",
-  
+
   -- Key mappings within popup
   -- Can be a single key (string) or multiple keys (table of strings)
   keymaps = {
@@ -130,18 +134,18 @@ require('marko').setup({
     goto = { "<CR>", "o" }, -- Example of multiple keys
     close = { "<Esc>", "q" },
   },
-  
+
   -- Direct mode configuration
   direct_mode = {
     mode_toggle_key = "<leader>mm", -- Key to toggle modes
   },
-  
+
   -- Show marks from all buffers or just current buffer
   show_all_buffers = false,
-  
+
   -- Exclude certain marks from display
   exclude_marks = { "'", "`", "^", ".", "[", "]", "<", ">" },
-  
+
   -- Virtual text configuration
   virtual_text = {
     enabled = true,        -- Enable virtual text marks
@@ -187,20 +191,20 @@ vim.cmd([[
 
 ## Commands
 
-| Command | Description |
-|---------|-------------|
-| `:Marko` | Open the marks popup |
-| `:MarkoToggleVirtual` | Toggle virtual text marks on/off |
-| `:MarkoToggleMode` | Toggle between popup and direct navigation modes |
-| `:MarkoDirectMode` | Enable direct navigation mode |
-| `:MarkoPopupMode` | Enable popup navigation mode |
+| Command               | Description                                      |
+| --------------------- | ------------------------------------------------ |
+| `:Marko`              | Open the marks popup                             |
+| `:MarkoToggleVirtual` | Toggle virtual text marks on/off                 |
+| `:MarkoToggleMode`    | Toggle between popup and direct navigation modes |
+| `:MarkoDirectMode`    | Enable direct navigation mode                    |
+| `:MarkoPopupMode`     | Enable popup navigation mode                     |
 
 ## Mark Quick Reference
 
-| Mark | Type | Scope | Persistence |
-|------|------|-------|-------------|
+| Mark  | Type   | Scope               | Persistence             |
+| ----- | ------ | ------------------- | ----------------------- |
 | `a-z` | Buffer | Current buffer only | Lost when buffer closes |
-| `A-Z` | Global | Across all files | Saved in shada file |
+| `A-Z` | Global | Across all files    | Saved in shada file     |
 
 ## Contributing
 
@@ -224,5 +228,5 @@ MIT License - see [LICENSE](LICENSE) file for details.
 ## Acknowledgments
 
 - Built for the Neovim community
-- Inspired by vim's built-in marks system  
+- Inspired by vim's built-in marks system
 - Uses Neovim's modern Lua API
