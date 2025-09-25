@@ -9,6 +9,17 @@ function M.is_open()
   return popup_win and vim.api.nvim_win_is_valid(popup_win)
 end
 
+local function get_separator_line()
+  local config = require("marko.config").get()
+  local width = config.width
+
+  if width < 80 then
+    width = 80
+  end
+
+  return string.rep("─", width)
+end
+
 -- Create shadow window for depth effect
 local function create_shadow(width, height, row, col)
   if not require("marko.config").get().shadow then
@@ -139,7 +150,7 @@ local function generate_header(marks)
     "",  -- Empty line for spacing
     mode_line,  -- Mode indicator line
     stats,
-    string.rep("─", 80),  -- Separator line (wider for better coverage)
+    get_separator_line(),
   }
 end
 
@@ -159,7 +170,7 @@ local function generate_column_headers()
   
   return {
     header_line,
-    string.rep("─", 80),  -- Separator line
+    get_separator_line(),
   }
 end
 
@@ -180,7 +191,7 @@ local function generate_status_bar()
   end
   
   return {
-    string.rep("─", 60),  -- Separator line
+    get_separator_line(),
     status_text,
     ""  -- Empty line for spacing
   }
