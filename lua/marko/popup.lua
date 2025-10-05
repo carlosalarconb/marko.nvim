@@ -9,7 +9,7 @@ function M.is_open()
   return popup_win and vim.api.nvim_win_is_valid(popup_win)
 end
 
-local function get_repeater_line()
+local function generate_repeater_line()
   local config = require("marko.config").get()
   local width = config.width
 
@@ -51,7 +51,6 @@ end
 function M.create_popup()
   local config = require("marko.config").get()
   local marks = require("marko.marks").get_all_marks()
-  
   -- Close existing popup if open
   if popup_win and vim.api.nvim_win_is_valid(popup_win) then
     vim.api.nvim_win_close(popup_win, true)
@@ -59,34 +58,27 @@ function M.create_popup()
   if shadow_win and vim.api.nvim_win_is_valid(shadow_win) then
     vim.api.nvim_win_close(shadow_win, true)
   end
-  
   -- Create buffer
   popup_buf = vim.api.nvim_create_buf(false, true)
-  
   -- Set buffer options
   vim.bo[popup_buf].bufhidden = "wipe"
   vim.bo[popup_buf].filetype = "marko-popup"
-  
   -- Calculate window size and position with new layout
   local width = math.max(config.width, 80)  -- Minimum width for new layout
-  
   -- Account for header, column headers, status bar, and marks
   local header_lines = 4  -- Empty, mode indicator, stats, separator
   local column_header_lines = 2  -- Headers + separator
   local status_lines = 3  -- Separator, status, empty
   local marks_lines = math.max(#marks, 1)  -- At least 1 for "no marks"
   local total_height = header_lines + column_header_lines + marks_lines + status_lines
-  
   local height = math.min(config.height, total_height)
   local row = math.ceil((vim.o.lines - height) / 2)
   local col = math.ceil((vim.o.columns - width) / 2)
-  
   -- Create shadow window first (if enabled)
   shadow_win = create_shadow(width, height, row, col)
-  
   -- Use just the base title for the window
     local mode_text = config.navigation_mode == "direct" and "Direct" or "Popup"
-  local window_title = config.title .. "- " .. mode_text .. " " 
+  local window_title = config.title .. "- " .. mode_text .. " "
 
   -- Create main window
   popup_win = vim.api.nvim_open_win(popup_buf, true, {
@@ -101,26 +93,21 @@ function M.create_popup()
     style = "minimal",
     zindex = 2  -- Above shadow
   })
-  
+
   -- Set window options with custom highlights based on mode
   local border_hl = config.navigation_mode == "direct" and "MarkoDirectModeBorder" or "MarkoPopupModeBorder"
   local winhl = string.format("Normal:MarkoNormal,FloatBorder:%s,CursorLine:MarkoCursorLine", border_hl)
   vim.wo[popup_win].winhl = winhl
-  
   -- Ensure clean background for the border area
   vim.wo[popup_win].winhighlight = winhl
-  
   -- Set transparency if configured
   if config.transparency > 0 then
     vim.wo[popup_win].winblend = config.transparency
   end
-  
   -- Enable cursor line highlighting
   vim.wo[popup_win].cursorline = true
-  
   -- Populate buffer with marks
   M.populate_buffer(marks)
-  
   -- Set up keymaps
   M.setup_keymaps()
 end
@@ -131,7 +118,6 @@ local function generate_header(marks)
   local config = require("marko.config").get()
   local buffer_count = 0
   local global_count = 0
-  
   for _, mark in ipairs(marks) do
     if mark.type == "buffer" then
       buffer_count = buffer_count + 1
@@ -144,13 +130,13 @@ local function generate_header(marks)
   local mode_text = config.navigation_mode == "direct" and "Direct" or "Popup"
   local mode_line = string.format("%s%s", string.rep(" ", math.floor((80 - #mode_text) / 2)), mode_text)
 
-  local stats = string.format("  %d Global %s %d Buffer", 
+  local stats = string.format("  %d Global %s %d Buffer",
     global_count, icons.icons.separator, buffer_count)
 
   return {
     "",
     stats,
-    get_repeater_line(),
+    generate_repeater_line(),
   }
 end
 
@@ -170,7 +156,7 @@ local function generate_column_headers()
 
   return {
     header_line,
-    get_repeater_line(),
+    generate_repeater_line(),
   }
 end
 
@@ -178,7 +164,6 @@ end
 local function generate_status_bar()
   local config = require("marko.config").get()
   local icons = require("marko.icons")
-  
   -- Show different hints based on navigation mode
   local status_text = ""
   if config.navigation_mode == "popup" then
@@ -189,9 +174,8 @@ local function generate_status_bar()
     status_text = string.format("  Press mark key to jump  Esc/' %s  ; Popup Mode", 
       icons.icons.escape)
   end
-  
   return {
-        get_repeater_line(),
+    generate_repeater_line(),
     status_text,
   }
 end
@@ -253,17 +237,13 @@ end
 function M.apply_highlighting(marks, marks_start_line)
   local config = require("marko.config").get()
   local ns_id = require("marko.config").get_namespace()
-  
   -- Clear existing highlights
   vim.api.nvim_buf_clear_namespace(popup_buf, ns_id, 0, -1)
-  
   -- Highlight header sections
   local all_lines = vim.api.nvim_buf_get_lines(popup_buf, 0, -1, false)
-  
   -- Highlight title and stats in header
   for i, line in ipairs(all_lines) do
     local line_idx = i - 1
-    
     -- Highlight mode indicator line with border color
     if line:match("^%s*Popup%s*$") or line:match("^%s*Direct%s*$") then
       local mode_hl = config.navigation_mode == "direct" and "MarkoDirectModeBorder" or "MarkoPopupModeBorder"
@@ -272,7 +252,6 @@ function M.apply_highlighting(marks, marks_start_line)
         hl_group = mode_hl
       })
     end
-    
     -- Highlight stats line
     if line:match("󰝰") then  -- Stats icon
       vim.api.nvim_buf_set_extmark(popup_buf, ns_id, line_idx, 0, {
@@ -280,7 +259,6 @@ function M.apply_highlighting(marks, marks_start_line)
         hl_group = "MarkoStats"
       })
     end
-    
     -- Highlight separator lines
     if line:match("^─+$") then
       vim.api.nvim_buf_set_extmark(popup_buf, ns_id, line_idx, 0, {
@@ -288,7 +266,6 @@ function M.apply_highlighting(marks, marks_start_line)
         hl_group = "MarkoSeparator"
       })
     end
-    
     -- Highlight column headers
     if line:match("Mark") then
       vim.api.nvim_buf_set_extmark(popup_buf, ns_id, line_idx, 0, {
@@ -296,7 +273,6 @@ function M.apply_highlighting(marks, marks_start_line)
         hl_group = "MarkoColumnHeader"
       })
     end
-    
     -- Highlight status bar with mode-specific colors
     if line:match("J/K") or line:match("Press mark key") then  -- Status bar line
       local status_hl = config.navigation_mode == "direct" and "MarkoDirectModeStatus" or "MarkoPopupModeStatus"
@@ -306,20 +282,16 @@ function M.apply_highlighting(marks, marks_start_line)
       })
     end
   end
-  
   if #marks == 0 then
     return
   end
-  
   -- Highlight mark content lines
   for i, mark in ipairs(marks) do
     local line_idx = marks_start_line + i - 1
     local line_content = vim.api.nvim_buf_get_lines(popup_buf, line_idx, line_idx + 1, false)[1]
-    
     if not line_content or #line_content == 0 then
       goto continue
     end
-    
     -- Safe pattern-based highlighting - use actual mark.type from data structure
     local patterns = {
       -- Line numbers (digits)
@@ -328,7 +300,6 @@ function M.apply_highlighting(marks, marks_start_line)
         hl_group = "MarkoLineNumber"
       }
     }
-    
     -- Handle mark character highlighting separately to ensure correct type-based coloring
     local mark_pattern = "^  ([a-zA-Z]) " .. vim.pesc(config.separator)
     local mark_start, mark_end, captured_mark = line_content:find(mark_pattern)
@@ -339,14 +310,12 @@ function M.apply_highlighting(marks, marks_start_line)
         hl_group = mark_hl_group
       })
     end
-    
     -- Apply each pattern
     for _, p in ipairs(patterns) do
       local start_pos = 1
       while start_pos <= #line_content do
         local match_start, match_end, capture = line_content:find(p.pattern, start_pos)
         if not match_start then break end
-        
         -- If we have a capture group, highlight just that
         if p.capture and capture then
           local capture_start = line_content:find(capture, match_start, true)
@@ -363,11 +332,9 @@ function M.apply_highlighting(marks, marks_start_line)
             hl_group = p.hl_group
           })
         end
-        
         start_pos = match_end + 1
       end
     end
-    
     -- Highlight filename section (between first and second separator now)
     local separators = {}
     local start_pos = 1
@@ -377,7 +344,6 @@ function M.apply_highlighting(marks, marks_start_line)
       table.insert(separators, sep_pos)
       start_pos = sep_pos + 1
     end
-    
     -- Filename is between 1st and 2nd separator (format: mark | line | file content)
     if #separators >= 2 then
       local filename_start = separators[1] + 1
@@ -395,7 +361,6 @@ function M.apply_highlighting(marks, marks_start_line)
         end
       end
     end
-    
     ::continue::
   end
 end
@@ -433,30 +398,26 @@ function M.setup_keymaps()
   end
 
   -- Go to mark
-  local goto_func = function()
+  local goto_mark = function()
     local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
     local marks_data = vim.b[popup_buf].marks_data
     local marks_start_line = vim.b[popup_buf].marks_start_line
-    
     -- Calculate mark index based on cursor position
     local mark_index = cursor_line - marks_start_line
-    
     if marks_data and mark_index >= 1 and mark_index <= #marks_data then
       M.close_popup()
       marks_module.goto_mark(marks_data[mark_index])
     end
   end
-  set_keymaps(config.keymaps.goto, goto_func)
+  set_keymaps(config.keymaps.goto, goto_mark)
 
   -- Delete mark
-  local delete_func = function()
+  local delete_mark = function()
     local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
     local marks_data = vim.b[popup_buf].marks_data
     local marks_start_line = vim.b[popup_buf].marks_start_line
-    
     -- Calculate mark index based on cursor position
     local mark_index = cursor_line - marks_start_line
-    
     if marks_data and mark_index >= 1 and mark_index <= #marks_data then
       marks_module.delete_mark(marks_data[mark_index])
       -- Refresh the popup
@@ -465,20 +426,17 @@ function M.setup_keymaps()
       end, 50)
     end
   end
-  set_keymaps(config.keymaps.delete, delete_func)
+  set_keymaps(config.keymaps.delete, delete_mark)
 
   -- Restrict cursor movement to marks section only
   local function constrain_cursor()
     local marks_data = vim.b[popup_buf].marks_data
     local marks_start_line = vim.b[popup_buf].marks_start_line
-    
     if not marks_data or #marks_data == 0 then
       return
     end
-    
     local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
     local marks_end_line = marks_start_line + #marks_data
-    
     -- Constrain cursor to marks section (1-indexed lines)
     local first_mark_line = marks_start_line + 1
     if cursor_line < first_mark_line then
@@ -487,29 +445,24 @@ function M.setup_keymaps()
       vim.api.nvim_win_set_cursor(0, {marks_end_line, 0})
     end
   end
-  
   -- Override j/k movement to constrain cursor
   vim.keymap.set("n", "j", function()
     vim.cmd("normal! j")
     constrain_cursor()
   end, { buffer = popup_buf, silent = true })
-  
   vim.keymap.set("n", "k", function()
     vim.cmd("normal! k")
     constrain_cursor()
   end, { buffer = popup_buf, silent = true })
-  
   -- Override down/up arrow keys as well
   vim.keymap.set("n", "<Down>", function()
     vim.cmd("normal! j")
     constrain_cursor()
   end, { buffer = popup_buf, silent = true })
-  
   vim.keymap.set("n", "<Up>", function()
     vim.cmd("normal! k")
     constrain_cursor()
   end, { buffer = popup_buf, silent = true })
-  
   -- Add mode toggle keymap in popup (keep popup open and refresh)
   vim.keymap.set("n", ";", function()
     require('marko').toggle_navigation_mode()
@@ -523,7 +476,6 @@ function M.setup_keymaps()
       end
     end, 50)
   end, { buffer = popup_buf, silent = true, desc = "Toggle navigation mode" })
-  
   -- Set up direct mode mark jumping (only when in direct mode)
   if config.navigation_mode == "direct" then
     local mark_chars = {}
@@ -535,12 +487,10 @@ function M.setup_keymaps()
     for i = string.byte('A'), string.byte('Z') do
       table.insert(mark_chars, string.char(i))
     end
-    
     -- Set up direct mark jumping keymaps in popup buffer
     for _, mark in ipairs(mark_chars) do
       vim.keymap.set("n", mark, function()
         local marks_data = vim.b[popup_buf].marks_data
-        
         -- Find the mark and jump to it
         if marks_data then
           for _, mark_info in ipairs(marks_data) do
@@ -551,7 +501,6 @@ function M.setup_keymaps()
             end
           end
         end
-        
         -- Mark not found
         vim.notify("Mark '" .. mark .. "' does not exist", vim.log.levels.WARN, {
           title = "Marko",
