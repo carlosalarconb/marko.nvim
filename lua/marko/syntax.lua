@@ -4,6 +4,7 @@ local M = {}
 function M.setup_syntax()
 	-- Clear any existing syntax
 	vim.cmd("syntax clear")
+
 	-- Define syntax regions and matches
 	vim.cmd([[
     " Icons at the beginning of lines
@@ -32,6 +33,7 @@ function M.setup_syntax()
     " Special case for "No marks found"
     syntax match MarkoNoMarks /^No marks found$/
   ]])
+
 	-- Link syntax groups to highlight groups
 	vim.cmd([[
     highlight default link MarkoIcon MarkoIcon
@@ -53,6 +55,7 @@ function M.setup_filetype()
 		pattern = "marko-popup",
 		callback = function()
 			M.setup_syntax()
+
 			-- Additional buffer-local settings
 			vim.opt_local.wrap = false
 			vim.opt_local.cursorline = true

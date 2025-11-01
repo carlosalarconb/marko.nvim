@@ -1,8 +1,11 @@
 # marko.nvim
 
+**** IMPORTANT ****: THIS IS A FORK 
+
 A modern Neovim plugin for enhanced mark management with a beautiful popup interface and dual navigation modes.
 
 ## Demo
+This is the original version video. So, you can see some differences. A new video will be uploaded.
 
 https://github.com/user-attachments/assets/ed8e6942-fbd0-44d0-8f35-fcb1c9cdb6fb
 

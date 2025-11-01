@@ -20,6 +20,7 @@ end
 local function get_mark_info(mark)
 	local marks_module = require("marko.marks")
 	local all_marks = marks_module.get_all_marks()
+
 	for _, mark_info in ipairs(all_marks) do
 		if mark_info.mark == mark then
 			return mark_info
@@ -31,6 +32,7 @@ end
 -- Handle direct mark jump
 local function handle_mark_jump(mark)
 	local mark_info = get_mark_info(mark)
+
 	if mark_info then
 		local marks_module = require("marko.marks")
 		marks_module.goto_mark(mark_info)
