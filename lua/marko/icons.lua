@@ -1,38 +1,33 @@
 local M = {}
 
--- Modern Unicode icons for different elements
+-- ============================================
+-- ICONS
+-- ============================================
 M.icons = {
-	-- Mark type icons
-	buffer_mark = "󰃉", -- File icon for buffer marks
-	global_mark = "󰞕", -- Globe icon for global marks
-
-	-- UI elements
-	title = "󰃀", -- Target/bookmark icon
-	stats = "󰝰", -- Stats/chart icon
-
-	-- File type icons (simplified set)
-	file = "󰈔", -- Generic file
-	lua = "", -- Lua
-	python = "", -- Python
-	javascript = "", -- JavaScript
-	typescript = "", -- TypeScript
-	json = "", -- JSON
-	markdown = "", -- Markdown
-	text = "󰈙", -- Text file
-
-	-- Status icons
-	separator = "│", -- Clean separator
-	arrow_right = "", -- Right arrow
-	bullet = "●", -- Bullet point
-
-	-- Navigation hints
-	enter = "󰌑", -- Enter key
-	delete = "󰆴", -- Delete/trash
-	escape = "󱊷", -- Escape
-	help = "󰋖", -- Help/question
+	buffer_mark = "󰃉",
+	global_mark = "󰞕",
+	title = "󰃀",
+	stats = "󰝰",
+	file = "󰈔",
+	lua = "",
+	python = "",
+	javascript = "",
+	typescript = "",
+	json = "",
+	markdown = "",
+	text = "󰈙",
+	separator = "│",
+	arrow_right = "",
+	bullet = "●",
+	enter = "󰌑",
+	delete = "󰆴",
+	escape = "󱊷",
+	help = "󰋖",
 }
 
--- Get file type icon based on filename
+-- ============================================
+-- FILE ICONS
+-- ============================================
 function M.get_file_icon(filename)
 	if not filename or filename == "" then
 		return M.icons.file
@@ -45,7 +40,6 @@ function M.get_file_icon(filename)
 
 	local ext_lower = extension:lower()
 
-	-- Map extensions to icons
 	local icon_map = {
 		lua = M.icons.lua,
 		py = M.icons.python,
@@ -61,7 +55,9 @@ function M.get_file_icon(filename)
 	return icon_map[ext_lower] or M.icons.file
 end
 
--- Get mark type icon
+-- ============================================
+-- MARK ICONS
+-- ============================================
 function M.get_mark_icon(mark_type)
 	if mark_type == "global" then
 		return M.icons.global_mark
@@ -70,7 +66,9 @@ function M.get_mark_icon(mark_type)
 	end
 end
 
--- Format mark line with icons
+-- ============================================
+-- FORMATTING
+-- ============================================
 function M.format_mark_line(mark, config)
 	local file_icon = M.get_file_icon(mark.filename)
 
@@ -81,13 +79,11 @@ function M.format_mark_line(mark, config)
 		filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":~:.")
 	end
 
-	-- Truncate long filenames - show end of path first
 	if #filename > config.columns.filename then
-		local max_length = config.columns.filename - 3 -- Account for "..."
+		local max_length = config.columns.filename - 3
 		local start_pos = #filename - max_length + 1
 		local truncated = filename:sub(start_pos)
 
-		-- Find the first directory separator to avoid cutting in the middle of a directory name
 		local first_slash = truncated:find("/")
 		if first_slash then
 			truncated = truncated:sub(first_slash + 1)
@@ -98,17 +94,16 @@ function M.format_mark_line(mark, config)
 
 	local trimmed_text = mark.text:gsub("^%s+", "")
 	local preview = trimmed_text:sub(1, 150)
-	-- Create formatted line without mark type icon
+
 	return string.format(
 		"%s %s %4d %s %s %s",
-		mark.mark, -- Mark letter
-		M.icons.separator, -- Separator
-		mark.line, -- Line number
-		M.icons.separator, -- Separator
-		filename, -- Filename
+		mark.mark,
+		M.icons.separator,
+		mark.line,
+		M.icons.separator,
+		filename,
 		"| " .. preview
 	)
 end
 
 return M
-

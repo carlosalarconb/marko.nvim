@@ -1,40 +1,24 @@
 local M = {}
 
--- Define syntax patterns for the marko-popup filetype
+-- ============================================
+-- SYNTAX DEFINITION
+-- ============================================
 function M.setup_syntax()
-	-- Clear any existing syntax
 	vim.cmd("syntax clear")
 
-	-- Define syntax regions and matches
 	vim.cmd([[
-    " Icons at the beginning of lines
     syntax match MarkoIcon /^[󰓹󰊄]/
-    
-    " Separators
     syntax match MarkoSeparator /│/
-    
-    " Mark characters (single letters)
     syntax match MarkoBufferMark /\s[a-z]\s/ contained
     syntax match MarkoGlobalMark /\s[A-Z]\s/ contained
-    
-    " Line numbers
     syntax match MarkoLineNumber /\s\+\d\+\s/
-    
-    " File icons and names
     syntax match MarkoFileIcon /󰈔/
     syntax match MarkoLineIcon /󰘕/
-    
-    " Filenames (after file icon)
     syntax match MarkoFilename /󰈔\s\+\zs[^│]\+\ze\s*│/
-    
-    " Content (everything after the last separator)
     syntax match MarkoContent /│\s*\zs.*$/
-    
-    " Special case for "No marks found"
     syntax match MarkoNoMarks /^No marks found$/
   ]])
 
-	-- Link syntax groups to highlight groups
 	vim.cmd([[
     highlight default link MarkoIcon MarkoIcon
     highlight default link MarkoSeparator MarkoSeparator
@@ -49,14 +33,15 @@ function M.setup_syntax()
   ]])
 end
 
--- Setup filetype detection
+-- ============================================
+-- FILETYPE
+-- ============================================
 function M.setup_filetype()
 	vim.api.nvim_create_autocmd("FileType", {
 		pattern = "marko-popup",
 		callback = function()
 			M.setup_syntax()
 
-			-- Additional buffer-local settings
 			vim.opt_local.wrap = false
 			vim.opt_local.cursorline = true
 			vim.opt_local.number = false
@@ -68,4 +53,3 @@ function M.setup_filetype()
 end
 
 return M
-
