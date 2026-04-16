@@ -64,7 +64,22 @@ function M.setup(bufnr, close_callback, refresh_callback)
 			end, 50)
 		end
 	end
-	set_keymaps(config.keymaps.delete, delete_mark)
+set_keymaps(config.keymaps.delete, delete_mark)
+
+	-- Preview file
+	local show_preview = function()
+		local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
+		local marks_data = vim.b[bufnr].marks_data
+		local marks_start_line = vim.b[bufnr].marks_start_line
+
+		local mark_index = cursor_line - marks_start_line
+
+		if marks_data and mark_index >= 1 and mark_index <= #marks_data then
+			local mark = marks_data[mark_index]
+			require("marko.popup.preview").create(mark)
+		end
+	end
+	set_keymaps(config.keymaps.preview, show_preview)
 
 	-- Constrain cursor movement to marks section only
 	local function constrain_cursor()

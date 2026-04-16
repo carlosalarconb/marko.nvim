@@ -56,6 +56,16 @@ if not sidebar_ok then
   all_passed = false
 end
 
+-- Run preview tests
+print("\n--- Preview Module ---")
+local preview_ok, preview_err = pcall(function()
+  require("tests.popup.test_preview").run_all()
+end)
+if not preview_ok then
+  print("Preview tests error: " .. tostring(preview_err))
+  all_passed = false
+end
+
 -- Run config tests
 print("\n--- Config Module ---")
 local config_ok, config_err = pcall(function()

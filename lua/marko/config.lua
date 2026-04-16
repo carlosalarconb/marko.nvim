@@ -4,18 +4,26 @@ local M = {}
 -- DEFAULT CONFIG
 -- ============================================
 local default_config = {
-	width = 90,
-	height = 25,
-	border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
-	title = " Marko ",
-	default_keymap = "'",
-	navigation_mode = "popup",
-	keymaps = {
-		delete = "d",
-		jump = "<CR>",
-		close = "<Esc>",
-	},
-	direct_mode = {
+  width = 90,
+  height = 25,
+  border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
+  title = " Marko ",
+  default_keymap = "'",
+  navigation_mode = "popup",
+  keymaps = {
+    delete = "d",
+    jump = "<CR>",
+    close = "<Esc>",
+    preview = "i",
+  },
+  preview = {
+    enabled = true,
+    width = 60,
+    position = "right",
+    lines = 20,
+    show_line_numbers = true,
+  },
+  direct_mode = {
 		mode_toggle_key = "<leader>mm",
 	},
 	exclude_marks = { "'", "`", "^", ".", "[", "]", "<", ">" },
