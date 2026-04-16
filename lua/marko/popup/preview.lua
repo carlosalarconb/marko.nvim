@@ -16,35 +16,27 @@ end
 -- ============================================
 -- READ FILE CONTENT
 -- ============================================
-local function read_file_content(file_path, max_lines)
-  local content = vim.fn.readfile(file_path)
-  if not content then
-    return {}
+local function read_file_content(file_path, center_line, max_lines)
+  local all_content = vim.fn.readfile(file_path)
+  if not all_content then
+    return {}, center_line
   end
+  
+  local total_lines = #all_content
+  local half_range = math.floor(max_lines / 2)
+  
+  local start_line = math.max(1, center_line - half_range)
+  local end_line = math.min(total_lines, center_line + half_range)
   
   local lines = {}
-  local start_line = 1
-  
-  for i = start_line, math.min(#content, max_lines) do
-    table.insert(lines, content[i])
+  for i = start_line, end_line do
+    table.insert(lines, {
+      num = i,
+      text = all_content[i]
+    })
   end
   
-  return lines
-end
-
--- ============================================
--- FORMAT LINES WITH LINE NUMBERS
--- ============================================
-local function format_lines_with_numbers(lines)
-  local formatted = {}
-  local max_width = tostring(#lines):len()
-  
-  for i, line in ipairs(lines) do
-    local line_num = string.format("%" .. max_width .. "d │ %s", i, line)
-    table.insert(formatted, line_num)
-  end
-  
-  return formatted
+  return lines, center_line - start_line + 1
 end
 
 -- ============================================
@@ -69,8 +61,8 @@ function M.create(mark)
   local file_path = mark.filename
   local bookmarked_line = mark.line or 1
   
-  -- Read file content
-  local content = read_file_content(file_path, config.preview.lines)
+  -- Read file content centered on the mark line
+  local content, highlight_index = read_file_content(file_path, bookmarked_line, config.preview.lines)
   
   if #content == 0 then
     return
@@ -81,30 +73,22 @@ function M.create(mark)
   vim.bo[preview_buf].bufhidden = "wipe"
   vim.bo[preview_buf].filetype = "marko-preview"
   
-  -- Format lines
-  local lines
-  if config.preview.show_line_numbers then
-    lines = format_lines_with_numbers(content)
-  else
-    lines = content
+  -- Format lines with line numbers
+  local lines = {}
+  for _, item in ipairs(content) do
+    table.insert(lines, string.format("%5d │ %s", item.num, item.text))
   end
   
   vim.api.nvim_buf_set_lines(preview_buf, 0, -1, false, lines)
   vim.bo[preview_buf].modifiable = false
   
-  -- Calculate window position
+  -- Calculate window position - centered
   local width = config.preview.width
-  local height = math.min(#lines + 2, config.preview.lines + 2)
+  local height = math.min(#lines + 2, config.preview.lines)
   local row = math.ceil((vim.o.lines - height) / 2)
+  local col = math.ceil((vim.o.columns - width) / 2)
   
-  local col
-  if config.preview.position == "left" then
-    col = 0
-  else
-    col = vim.o.columns - width - 1
-  end
-  
-  -- Create window
+  -- Create window with higher zindex to appear in front
   preview_win = vim.api.nvim_open_win(preview_buf, true, {
     relative = "editor",
     width = width,
@@ -114,6 +98,7 @@ function M.create(mark)
     border = config.border,
     style = "minimal",
     focusable = true,
+    zindex = 100,
   })
   
   -- Set window options
@@ -121,12 +106,15 @@ function M.create(mark)
   vim.wo[preview_win].cursorline = true
   
   -- Highlight the bookmarked line
-  if bookmarked_line <= #content then
-    vim.api.nvim_buf_add_highlight(preview_buf, -1, "Visual", bookmarked_line - 1, 0, -1)
+  if highlight_index then
+    vim.api.nvim_buf_add_highlight(preview_buf, -1, "Visual", highlight_index - 1, 0, -1)
     
     -- Highlight exact position if available
     if mark.col then
-      vim.api.nvim_buf_add_highlight(preview_buf, -1, "Error", bookmarked_line - 1, mark.col - 1, mark.col)
+      local col_start = string.find(lines[highlight_index], tostring(mark.col))
+      if col_start then
+        vim.api.nvim_buf_add_highlight(preview_buf, -1, "Error", highlight_index - 1, col_start - 1, col_start)
+      end
     end
   end
   

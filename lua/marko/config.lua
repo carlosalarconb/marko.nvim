@@ -20,7 +20,7 @@ local default_config = {
     enabled = true,
     width = 60,
     position = "right",
-    lines = 20,
+    lines = 40,
     show_line_numbers = true,
   },
   direct_mode = {
