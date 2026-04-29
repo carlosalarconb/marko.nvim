@@ -190,7 +190,7 @@ function M.create(marks)
 	local total_width
 
 	if preview_enabled then
-		left_width = config.preview.width
+		left_width = math.min(config.preview.width, 200)
 		local right_width = config.preview.width
 		total_width = left_width + 2 + right_width
 	else

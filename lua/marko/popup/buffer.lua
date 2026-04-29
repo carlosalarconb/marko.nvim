@@ -72,7 +72,7 @@ function M.generate_separator()
 	local width
 
 	if config.preview.enabled then
-		width = config.preview.width
+		width = math.min(config.preview.width, 200)
 	else
 		width = config.width
 		if width < 80 then
