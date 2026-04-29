@@ -109,6 +109,12 @@ local function update_preview(mark)
 	if preview_win and vim.api.nvim_win_is_valid(preview_win) and highlight_index then
 		vim.api.nvim_win_set_cursor(preview_win, { highlight_index, 0 })
 	end
+
+	-- Update preview window title to show filename
+	if preview_win and vim.api.nvim_win_is_valid(preview_win) and file_path then
+		local filename = vim.fn.fnamemodify(file_path, ":t")
+		vim.api.nvim_win_set_config(preview_win, { title = " " .. filename .. " " })
+	end
 end
 
 -- ============================================
