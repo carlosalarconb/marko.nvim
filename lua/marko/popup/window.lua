@@ -167,7 +167,7 @@ function M.create(marks)
 	vim.bo[popup_buf].filetype = "marko-popup"
 
 	-- Window dimensions
-	local left_width = math.min(config.preview.width, 200)  -- Left panel capped at 200px
+	local left_width = config.preview.left_width or 200  -- Left panel configurable, default 200px
 	local right_width = config.preview.width  -- Right panel keeps original width
 	local height = config.height
 

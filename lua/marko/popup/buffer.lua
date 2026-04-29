@@ -21,7 +21,7 @@ local function generate_header(marks)
 
 	local width
 	if config.preview.enabled then
-		width = math.min(config.preview.width, 200)  -- Left panel capped at 200
+		width = config.preview.left_width or 200  -- Left panel configurable
 	else
 		width = config.width
 	end
@@ -50,10 +50,10 @@ local function generate_column_headers()
 
 	local header_line = string.format("  %s %s %s %s %s", col_mark, icons.icons.separator, col_line, icons.icons.separator, col_file)
 
-	-- Truncate to panel width (left panel capped at 200)
+	-- Truncate to panel width (left panel configurable)
 	local max_width
 	if config.preview.enabled then
-		max_width = math.min(config.preview.width, 200)
+		max_width = config.preview.left_width or 200
 	else
 		max_width = config.width
 	end
@@ -82,10 +82,10 @@ local function generate_status_bar()
 		status_text = string.format("  Press mark key to jump  Esc/' %s  ; Popup Mode", icons.icons.escape)
 	end
 
-	-- Truncate status text to fit panel width (left panel capped at 200)
+	-- Truncate status text to fit panel width (left panel configurable)
 	local max_width
 	if config.preview.enabled then
-		max_width = math.min(config.preview.width, 200)
+		max_width = config.preview.left_width or 200
 	else
 		max_width = config.width
 	end
@@ -109,7 +109,7 @@ function M.generate_separator()
 	local width
 
 	if config.preview.enabled then
-		width = math.min(config.preview.width, 200)  -- Left panel capped at 200
+		width = config.preview.left_width or 200  -- Left panel configurable
 	else
 		width = config.width
 		if width < 80 then
@@ -146,10 +146,10 @@ function M.populate(bufnr, marks)
 	else
 		for i, mark in ipairs(marks) do
 			local formatted_line = "  " .. icons.format_mark_line(mark, config)
-			-- Truncate to panel width (left panel capped at 200)
+			-- Truncate to panel width (left panel configurable)
 			local max_width
 			if config.preview.enabled then
-				max_width = math.min(config.preview.width, 200)
+				max_width = config.preview.left_width or 200
 			else
 				max_width = config.width
 			end

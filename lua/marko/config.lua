@@ -17,7 +17,8 @@ local default_config = {
   },
   preview = {
     enabled = true,
-    width = 340,
+    width = 340,       -- right panel width (characters)
+    left_width = 100,   -- left panel width (characters)
     position = "right",
     lines = 40,
     show_line_numbers = true,
