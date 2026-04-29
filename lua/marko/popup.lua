@@ -41,6 +41,13 @@ function M.create_popup()
 	end, function()
 		M.create_popup()
 	end)
+
+	-- Trigger initial preview for first mark (cursor doesn't fire CursorMoved yet)
+	if #marks > 0 then
+		vim.defer_fn(function()
+			window.update_preview(marks[1])
+		end, 10)
+	end
 end
 
 -- ============================================

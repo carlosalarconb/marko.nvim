@@ -69,10 +69,15 @@ end
 -- ============================================
 function M.generate_separator()
 	local config = require("marko.config").get()
-	local width = config.width
+	local width
 
-	if width < 80 then
-		width = 80
+	if config.preview.enabled then
+		width = config.preview.width
+	else
+		width = config.width
+		if width < 80 then
+			width = 80
+		end
 	end
 
 	return string.rep("─", width)

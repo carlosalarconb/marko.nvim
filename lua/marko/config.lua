@@ -4,8 +4,8 @@ local M = {}
 -- DEFAULT CONFIG
 -- ============================================
 local default_config = {
-  width = 90,
-  height = 25,
+  width = 400,
+  height = 40,
   border = { "╭", "─", "╮", "│", "╯", "─", "╰", "│" },
   title = " Marko ",
   default_keymap = "'",
@@ -14,11 +14,10 @@ local default_config = {
     delete = "d",
     jump = "<CR>",
     close = "<Esc>",
-    preview = "i",
   },
   preview = {
     enabled = true,
-    width = 60,
+    width = 340,
     position = "right",
     lines = 40,
     show_line_numbers = true,
@@ -33,7 +32,7 @@ local default_config = {
 	separator = "│",
 	sidebar = {
 		enabled = false,
-		width = 40,
+		width = 220,
 		position = "right",
 		keymap = "<leader>m",
 	},

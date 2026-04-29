@@ -100,7 +100,7 @@ function M.apply(bufnr, marks, marks_start_line)
 			start_pos = match_end + 1
 		end
 
-		-- Highlight filename section
+		-- Highlight filename section (after second separator to end of line)
 		local separators = {}
 		local sep_start = 1
 		while true do
@@ -113,18 +113,17 @@ function M.apply(bufnr, marks, marks_start_line)
 		end
 
 		if #separators >= 2 then
-			local filename_start = separators[1] + 1
-			local filename_end = separators[2] - 1
+			local filename_start = separators[2] + 1
+			local filename_end = #line_content
 			if filename_start <= filename_end then
-				local filename_section = line_content:sub(filename_start, filename_end)
-				local icon_end = filename_section:find(" ") or 0
-				if icon_end > 0 then
-					filename_start = filename_start + icon_end
-					vim.api.nvim_buf_set_extmark(bufnr, ns_id, line_idx, filename_start - 1, {
-						end_col = filename_end,
-						hl_group = "MarkoFilename",
-					})
+				-- skip leading spaces
+				while filename_start <= filename_end and line_content:sub(filename_start, filename_start) == " " do
+					filename_start = filename_start + 1
 				end
+				vim.api.nvim_buf_set_extmark(bufnr, ns_id, line_idx, filename_start - 1, {
+					end_col = filename_end,
+					hl_group = "MarkoFilename",
+				})
 			end
 		end
 

@@ -70,8 +70,6 @@ end
 -- FORMATTING
 -- ============================================
 function M.format_mark_line(mark, config)
-	local file_icon = M.get_file_icon(mark.filename)
-
 	local filename = ""
 	if mark.filename then
 		filename = vim.fn.fnamemodify(mark.filename, ":~:.")
@@ -79,8 +77,13 @@ function M.format_mark_line(mark, config)
 		filename = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(0), ":~:.")
 	end
 
-	if #filename > config.columns.filename then
-		local max_length = config.columns.filename - 3
+	local max_filename = config.columns.filename
+	if config.preview.enabled then
+		max_filename = 25
+	end
+
+	if #filename > max_filename then
+		local max_length = max_filename - 3
 		local start_pos = #filename - max_length + 1
 		local truncated = filename:sub(start_pos)
 
@@ -92,17 +95,13 @@ function M.format_mark_line(mark, config)
 		filename = "..." .. truncated
 	end
 
-	local trimmed_text = mark.text:gsub("^%s+", "")
-	local preview = trimmed_text:sub(1, 150)
-
 	return string.format(
-		"%s %s %4d %s %s %s",
+		"%s %s %4d %s %s",
 		mark.mark,
 		M.icons.separator,
 		mark.line,
 		M.icons.separator,
-		filename,
-		"| " .. preview
+		filename
 	)
 end
 

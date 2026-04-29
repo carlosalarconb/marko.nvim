@@ -9,13 +9,10 @@ function M.setup_syntax()
 	vim.cmd([[
     syntax match MarkoIcon /^[󰓹󰊄]/
     syntax match MarkoSeparator /│/
-    syntax match MarkoBufferMark /\s[a-z]\s/ contained
-    syntax match MarkoGlobalMark /\s[A-Z]\s/ contained
+    syntax match MarkoBufferMark /\s[a-z]\s/
+    syntax match MarkoGlobalMark /\s[A-Z]\s/
     syntax match MarkoLineNumber /\s\+\d\+\s/
-    syntax match MarkoFileIcon /󰈔/
-    syntax match MarkoLineIcon /󰘕/
-    syntax match MarkoFilename /󰈔\s\+\zs[^│]\+\ze\s*│/
-    syntax match MarkoContent /│\s*\zs.*$/
+    syntax match MarkoFilename /│\s*\zs[^│]\+$/
     syntax match MarkoNoMarks /^No marks found$/
   ]])
 
@@ -25,11 +22,8 @@ function M.setup_syntax()
     highlight default link MarkoBufferMark MarkoBufferMark
     highlight default link MarkoGlobalMark MarkoGlobalMark
     highlight default link MarkoLineNumber MarkoLineNumber
-    highlight default link MarkoFileIcon MarkoIcon
-    highlight default link MarkoLineIcon MarkoIcon
     highlight default link MarkoFilename MarkoFilename
-    highlight default link MarkoContent MarkoContent
-    highlight default link MarkoNoMarks MarkoContent
+    highlight default link MarkoNoMarks MarkoNormal
   ]])
 end
 

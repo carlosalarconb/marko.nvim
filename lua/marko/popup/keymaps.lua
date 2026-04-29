@@ -6,6 +6,7 @@ local M = {}
 function M.setup(bufnr, close_callback, refresh_callback)
 	local config = require("marko.config").get()
 	local marks_module = require("marko.marks")
+	local window = require("marko.popup.window")
 
 	-- Helper to set single or multiple keymaps
 	local function set_keymaps(keys, func)
@@ -15,6 +16,23 @@ function M.setup(bufnr, close_callback, refresh_callback)
 			end
 		elseif type(keys) == "string" then
 			vim.keymap.set("n", keys, func, { buffer = bufnr, silent = true })
+		end
+	end
+
+	-- Update live preview based on current cursor position
+	local function update_live_preview()
+		if not config.preview.enabled then
+			return
+		end
+
+		local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
+		local marks_data = vim.b[bufnr].marks_data
+		local marks_start_line = vim.b[bufnr].marks_start_line
+
+		local mark_index = cursor_line - marks_start_line
+
+		if marks_data and mark_index >= 1 and mark_index <= #marks_data then
+			window.update_preview(marks_data[mark_index])
 		end
 	end
 
@@ -64,22 +82,7 @@ function M.setup(bufnr, close_callback, refresh_callback)
 			end, 50)
 		end
 	end
-set_keymaps(config.keymaps.delete, delete_mark)
-
-	-- Preview file
-	local show_preview = function()
-		local cursor_line = vim.api.nvim_win_get_cursor(0)[1]
-		local marks_data = vim.b[bufnr].marks_data
-		local marks_start_line = vim.b[bufnr].marks_start_line
-
-		local mark_index = cursor_line - marks_start_line
-
-		if marks_data and mark_index >= 1 and mark_index <= #marks_data then
-			local mark = marks_data[mark_index]
-			require("marko.popup.preview").create(mark)
-		end
-	end
-	set_keymaps(config.keymaps.preview, show_preview)
+	set_keymaps(config.keymaps.delete, delete_mark)
 
 	-- Constrain cursor movement to marks section only
 	local function constrain_cursor()
@@ -101,7 +104,7 @@ set_keymaps(config.keymaps.delete, delete_mark)
 		end
 	end
 
-	-- Override j/k movement to constrain cursor
+	-- Override j/k movement to constrain cursor and update preview
 	vim.keymap.set("n", "j", function()
 		vim.cmd("normal! j")
 		constrain_cursor()
@@ -122,6 +125,18 @@ set_keymaps(config.keymaps.delete, delete_mark)
 		vim.cmd("normal! k")
 		constrain_cursor()
 	end, { buffer = bufnr, silent = true })
+
+	-- Set up CursorMoved autocmd for live preview updates
+	if config.preview.enabled then
+		local augroup = vim.api.nvim_create_augroup("MarkoPopupPreview", { clear = true })
+		vim.api.nvim_create_autocmd("CursorMoved", {
+			group = augroup,
+			buffer = bufnr,
+			callback = function()
+				update_live_preview()
+			end,
+		})
+	end
 
 	-- Add mode toggle keymap in popup
 	vim.keymap.set("n", ";", function()

@@ -5,12 +5,110 @@ local M = {}
 -- ============================================
 local sidebar_buf = nil
 local sidebar_win = nil
+local preview_buf = nil
+local preview_win = nil
 
 -- ============================================
 -- STATE CHECK
 -- ============================================
 function M.is_open()
 	return sidebar_win and vim.api.nvim_win_is_valid(sidebar_win)
+end
+
+-- ============================================
+-- READ FILE CONTENT
+-- ============================================
+local function read_file_content(file_path, center_line, max_lines)
+	local all_content = vim.fn.readfile(file_path)
+	if not all_content then
+		return {}, center_line
+	end
+
+	local total_lines = #all_content
+
+	-- Calculate ideal range centered on the bookmarked line
+	local half_range = math.floor(max_lines / 2)
+	local ideal_start = center_line - half_range
+	local ideal_end = center_line + half_range
+
+	-- Adjust if near the beginning or end of file
+	local start_line = math.max(1, ideal_start)
+	local end_line = math.min(total_lines, ideal_end)
+
+	-- If we hit the beginning, try to show more lines at the end
+	if start_line == 1 and ideal_start < 1 then
+		end_line = math.min(total_lines, end_line + (1 - ideal_start))
+	end
+
+	-- If we hit the end, try to show more lines at the beginning
+	if end_line == total_lines and ideal_end > total_lines then
+		start_line = math.max(1, start_line - (ideal_end - total_lines))
+	end
+
+	-- Recalculate to ensure we don't exceed bounds
+	start_line = math.max(1, start_line)
+	end_line = math.min(total_lines, end_line)
+
+	local lines = {}
+	for i = start_line, end_line do
+		table.insert(lines, {
+			num = i,
+			text = all_content[i],
+		})
+	end
+
+	return lines, center_line - start_line + 1
+end
+
+-- ============================================
+-- UPDATE PREVIEW
+-- ============================================
+local function update_preview(mark)
+	local config = require("marko.config").get()
+	if not preview_win or not vim.api.nvim_win_is_valid(preview_win) then
+		return
+	end
+	if not mark or not mark.filename then
+		return
+	end
+
+	local file_path = mark.filename
+	if vim.fn.filereadable(file_path) ~= 1 then
+		return
+	end
+
+	local bookmarked_line = mark.line or 1
+	local win_config = vim.api.nvim_win_get_config(preview_win)
+	local height = (win_config and win_config.height) or config.height
+	local lines_to_show = math.max(height - 2, 5)
+
+	local content, highlight_index = read_file_content(file_path, bookmarked_line, lines_to_show)
+
+	if #content == 0 then
+		return
+	end
+
+	local ns_id = require("marko.config").get_namespace()
+	vim.api.nvim_buf_clear_namespace(preview_buf, ns_id, 0, -1)
+
+	vim.bo[preview_buf].modifiable = true
+	local lines = {}
+	for _, item in ipairs(content) do
+		table.insert(lines, string.format("%5d │ %s", item.num, item.text))
+	end
+
+	vim.api.nvim_buf_set_lines(preview_buf, 0, -1, false, lines)
+	vim.bo[preview_buf].modifiable = false
+
+	-- Highlight the bookmarked line
+	if highlight_index then
+		vim.api.nvim_buf_add_highlight(preview_buf, ns_id, "Visual", highlight_index - 1, 0, -1)
+	end
+
+	-- Scroll preview window to show the bookmarked line
+	if preview_win and vim.api.nvim_win_is_valid(preview_win) and highlight_index then
+		vim.api.nvim_win_set_cursor(preview_win, { highlight_index, 0 })
+	end
 end
 
 -- ============================================
@@ -63,42 +161,71 @@ function M.create()
 
 	-- Close existing sidebar
 	if sidebar_win and vim.api.nvim_win_is_valid(sidebar_win) then
-		vim.api.nvim_win_close(sidebar_win, true)
+		M.close()
 	end
 
-	-- Create buffer
+	-- Create sidebar buffer
 	sidebar_buf = vim.api.nvim_create_buf(false, true)
 	vim.bo[sidebar_buf].bufhidden = "wipe"
 	vim.bo[sidebar_buf].filetype = "marko-sidebar"
 
 	-- Calculate position
-	local width = config.sidebar.width
-	local height = math.min(config.height, #marks + 6)
+	local sidebar_width = config.sidebar.width
+	local preview_enabled = config.preview.enabled
+	local total_width = sidebar_width + (preview_enabled and config.preview.width + 2 or 0)
+
+	local height = config.height
 	local row = math.ceil((vim.o.lines - height) / 2)
 
 	local col
 	if config.sidebar.position == "left" then
 		col = 0
 	else
-		col = vim.o.columns - width
+		col = vim.o.columns - total_width
 	end
 
-	-- Create window
+	-- Create sidebar window
 	sidebar_win = vim.api.nvim_open_win(sidebar_buf, true, {
 		relative = "editor",
-		width = width,
+		width = sidebar_width,
 		height = height,
 		row = row,
 		col = col,
 		border = config.border,
 		style = "minimal",
 		focusable = true,
+		zindex = 2,
 	})
 
 	-- Set window options
 	local border_hl = config.navigation_mode == "direct" and "MarkoDirectModeBorder" or "MarkoPopupModeBorder"
 	vim.wo[sidebar_win].winhl = string.format("Normal:MarkoNormal,FloatBorder:%s", border_hl)
 	vim.wo[sidebar_win].cursorline = true
+
+	-- Create preview window if enabled
+	if preview_enabled then
+		local preview_col = col + sidebar_width + 2
+
+		preview_buf = vim.api.nvim_create_buf(false, true)
+		vim.bo[preview_buf].bufhidden = "wipe"
+		vim.bo[preview_buf].filetype = "marko-preview"
+
+		preview_win = vim.api.nvim_open_win(preview_buf, false, {
+			relative = "editor",
+			width = config.preview.width,
+			height = height,
+			row = row,
+			col = preview_col,
+			border = config.border,
+			title = " Preview ",
+			title_pos = "center",
+			style = "minimal",
+			focusable = false,
+			zindex = 2,
+		})
+
+		vim.wo[preview_win].winhl = string.format("Normal:MarkoNormal,FloatBorder:%s", border_hl)
+	end
 
 	-- Populate buffer
 	local lines = generate_content(marks)
@@ -115,9 +242,30 @@ function M.create()
 	-- Setup keymaps
 	M.setup_keymaps()
 
+	-- Setup CursorMoved autocmd for preview
+	if preview_enabled then
+		vim.api.nvim_create_autocmd("CursorMoved", {
+			buffer = sidebar_buf,
+			callback = function()
+				local cursor_line = vim.api.nvim_win_get_cursor(sidebar_win)[1]
+				local marks_data = vim.b[sidebar_buf].marks_data
+				local marks_start_line = vim.b[sidebar_buf].marks_start_line
+
+				local mark_index = cursor_line - marks_start_line
+				if marks_data and mark_index >= 1 and mark_index <= #marks_data then
+					update_preview(marks_data[mark_index])
+				end
+			end,
+		})
+	end
+
 	-- Position cursor
 	if #marks > 0 then
 		vim.api.nvim_win_set_cursor(sidebar_win, { 3, 0 })
+		-- Trigger initial preview
+		vim.defer_fn(function()
+			update_preview(marks[1])
+		end, 10)
 	end
 end
 
@@ -249,11 +397,16 @@ end
 -- CLOSE SIDEBAR
 -- ============================================
 function M.close()
+	if preview_win and vim.api.nvim_win_is_valid(preview_win) then
+		vim.api.nvim_win_close(preview_win, true)
+	end
 	if sidebar_win and vim.api.nvim_win_is_valid(sidebar_win) then
 		vim.api.nvim_win_close(sidebar_win, true)
 	end
 	sidebar_win = nil
 	sidebar_buf = nil
+	preview_win = nil
+	preview_buf = nil
 end
 
 return M

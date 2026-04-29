@@ -1,6 +1,17 @@
 local M = {}
 
 -- ============================================
+-- PATH NORMALIZATION
+-- ============================================
+local function normalize_path(path)
+	if path == "" then
+		return path
+	end
+	-- Use fnamemodify to get absolute path with correct separators
+	return vim.fn.fnamemodify(path, ":p")
+end
+
+-- ============================================
 -- BUFFER MARKS
 -- ============================================
 function M.get_buffer_marks()
@@ -34,7 +45,7 @@ function M.get_all_buffer_marks()
 
 	for _, buf in ipairs(vim.api.nvim_list_bufs()) do
 		if vim.api.nvim_buf_is_loaded(buf) then
-			local filename = vim.api.nvim_buf_get_name(buf)
+			local filename = normalize_path(vim.api.nvim_buf_get_name(buf))
 
 			for _, data in ipairs(vim.fn.getmarklist(buf)) do
 				local mark = data.mark:sub(2, 3)
@@ -69,7 +80,7 @@ function M.get_global_marks()
 		local pos = data.pos
 
 		if mark:match("[A-Z]") and pos[2] > 0 then
-			local filename = data.file or ""
+			local filename = normalize_path(data.file or "")
 			local line_text = ""
 
 			local loaded_buf = nil
