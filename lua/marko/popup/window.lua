@@ -80,29 +80,10 @@ local function read_file_content(file_path, center_line, max_lines)
 	end
 
 	local total_lines = #all_content
-
-	-- Calculate ideal range centered on the bookmarked line
 	local half_range = math.floor(max_lines / 2)
-	local ideal_start = center_line - half_range
-	local ideal_end = center_line + half_range
 
-	-- Adjust if near the beginning or end of file
-	local start_line = math.max(1, ideal_start)
-	local end_line = math.min(total_lines, ideal_end)
-
-	-- If we hit the beginning, try to show more lines at the end
-	if start_line == 1 and ideal_start < 1 then
-		end_line = math.min(total_lines, end_line + (1 - ideal_start))
-	end
-
-	-- If we hit the end, try to show more lines at the beginning
-	if end_line == total_lines and ideal_end > total_lines then
-		start_line = math.max(1, start_line - (ideal_end - total_lines))
-	end
-
-	-- Recalculate to ensure we don't exceed bounds
-	start_line = math.max(1, start_line)
-	end_line = math.min(total_lines, end_line)
+	local start_line = math.max(1, center_line - half_range)
+	local end_line = math.min(total_lines, center_line + half_range)
 
 	local lines = {}
 	for i = start_line, end_line do
@@ -185,32 +166,22 @@ function M.create(marks)
 	vim.bo[popup_buf].bufhidden = "wipe"
 	vim.bo[popup_buf].filetype = "marko-popup"
 
-	-- Calculate window size and position
-	local left_width
-	local total_width
-
-	if preview_enabled then
-		left_width = math.min(config.preview.width, 200)
-		local right_width = config.preview.width
-		total_width = left_width + 2 + right_width
-	else
-		total_width = math.max(config.width, 80)
-		left_width = total_width
-	end
-
-	local header_lines = 4
-	local column_header_lines = 2
-	local status_lines = 3
-	local marks_lines = math.max(#marks, 1)
-	local total_height = header_lines + column_header_lines + marks_lines + status_lines
-
+	-- Window dimensions
+	local left_width = math.min(config.preview.width, 200)  -- Left panel capped at 200px
+	local right_width = config.preview.width  -- Right panel keeps original width
 	local height = config.height
+
+	-- Calculate total width: left panel (with borders) + gap(2) + right panel (with borders)
+	-- Each panel border takes 2 columns (1 left + 1 right)
+	local total_width = (left_width + 2) + 2 + (right_width + 2)
+
+	-- Position
 	local row = math.ceil((vim.o.lines - height) / 2)
-	local left_col = math.ceil((vim.o.columns - total_width) / 2)
+	local left_col = math.ceil((vim.o.columns - total_width) / 2)  -- Start of left window (with border)
 
 	-- Create shadow window only when preview is disabled
 	if not preview_enabled then
-		shadow_win = create_shadow(total_width, height, row, left_col)
+		shadow_win = create_shadow(left_width, height, row, left_col)
 	end
 
 	-- Create window title
@@ -218,12 +189,14 @@ function M.create(marks)
 	local window_title = config.title .. "- " .. mode_text .. " "
 
 	-- Create main window (left pane)
+	-- left_col is the start of the window INCLUDING its left border
+	-- nvim_open_win col param expects content area start, so we add 1 for the left border
 	popup_win = vim.api.nvim_open_win(popup_buf, true, {
 		relative = "editor",
 		width = left_width,
 		height = height,
 		row = row,
-		col = left_col,
+		col = left_col + 1,  -- +1 to skip left border
 		border = config.border,
 		title = window_title,
 		title_pos = "center",
@@ -244,11 +217,15 @@ function M.create(marks)
 
 	-- Enable cursor line highlighting
 	vim.wo[popup_win].cursorline = true
+	vim.wo[popup_win].wrap = false
+	vim.wo[popup_win].linebreak = false
 
 	-- Create preview window if enabled
 	if preview_enabled then
-		local right_width = config.preview.width
-		local right_col = left_col + left_width + 2
+		-- Right window content starts after: left window right border + gap(2)
+		-- Left window right border is at: left_col + left_width + 2
+		-- Add gap of 2, then +1 to skip right window's own left border
+		local right_content_col = left_col + (left_width + 2) + 2 + 1
 
 		preview_buf = vim.api.nvim_create_buf(false, true)
 		vim.bo[preview_buf].bufhidden = "wipe"
@@ -259,7 +236,7 @@ function M.create(marks)
 			width = right_width,
 			height = height,
 			row = row,
-			col = right_col,
+			col = right_content_col,
 			border = config.border,
 			title = " Preview ",
 			title_pos = "center",

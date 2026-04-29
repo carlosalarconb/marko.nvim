@@ -18,7 +18,15 @@ local function generate_header(marks)
 	end
 
 	local mode_text = config.navigation_mode == "direct" and "Direct" or "Popup"
-	local mode_line = string.format("%s%s", string.rep(" ", math.floor((80 - #mode_text) / 2)), mode_text)
+
+	local width
+	if config.preview.enabled then
+		width = math.min(config.preview.width, 200)  -- Left panel capped at 200
+	else
+		width = config.width
+	end
+
+	local mode_line = string.format("%s%s", string.rep(" ", math.floor((width - #mode_text) / 2)), mode_text)
 
 	local stats = string.format("  %d Global %s %d Buffer", global_count, icons.icons.separator, buffer_count)
 
@@ -34,9 +42,25 @@ end
 -- ============================================
 local function generate_column_headers()
 	local icons = require("marko.icons")
+	local config = require("marko.config").get()
 
-	local header_line =
-		string.format("  %s %s %4s %s %s", "M", icons.icons.separator, "Line", icons.icons.separator, "File")
+	local col_mark = string.rep(" ", config.columns.mark - 1) .. "M"
+	local col_line = string.rep(" ", config.columns.line - 4) .. "Line"
+	local col_file = "File"
+
+	local header_line = string.format("  %s %s %s %s %s", col_mark, icons.icons.separator, col_line, icons.icons.separator, col_file)
+
+	-- Truncate to panel width (left panel capped at 200)
+	local max_width
+	if config.preview.enabled then
+		max_width = math.min(config.preview.width, 200)
+	else
+		max_width = config.width
+	end
+
+	if #header_line > max_width then
+		header_line = header_line:sub(1, max_width)
+	end
 
 	return {
 		header_line,
@@ -58,6 +82,19 @@ local function generate_status_bar()
 		status_text = string.format("  Press mark key to jump  Esc/' %s  ; Popup Mode", icons.icons.escape)
 	end
 
+	-- Truncate status text to fit panel width (left panel capped at 200)
+	local max_width
+	if config.preview.enabled then
+		max_width = math.min(config.preview.width, 200)
+	else
+		max_width = config.width
+	end
+
+	local stripped = status_text:gsub("[\128-\255]", "") -- rough strip of wide chars for length calc
+	if #stripped > max_width then
+		status_text = status_text:sub(1, max_width)
+	end
+
 	return {
 		M.generate_separator(),
 		status_text,
@@ -72,7 +109,7 @@ function M.generate_separator()
 	local width
 
 	if config.preview.enabled then
-		width = math.min(config.preview.width, 200)
+		width = math.min(config.preview.width, 200)  -- Left panel capped at 200
 	else
 		width = config.width
 		if width < 80 then
@@ -108,8 +145,18 @@ function M.populate(bufnr, marks)
 		table.insert(lines, "  No marks found")
 	else
 		for i, mark in ipairs(marks) do
-			local formatted_line = icons.format_mark_line(mark, config)
-			table.insert(lines, "  " .. formatted_line)
+			local formatted_line = "  " .. icons.format_mark_line(mark, config)
+			-- Truncate to panel width (left panel capped at 200)
+			local max_width
+			if config.preview.enabled then
+				max_width = math.min(config.preview.width, 200)
+			else
+				max_width = config.width
+			end
+			if #formatted_line > max_width then
+				formatted_line = formatted_line:sub(1, max_width)
+			end
+			table.insert(lines, formatted_line)
 		end
 	end
 

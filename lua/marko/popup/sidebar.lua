@@ -204,7 +204,8 @@ function M.create()
 
 	-- Create preview window if enabled
 	if preview_enabled then
-		local preview_col = col + sidebar_width + 2
+		-- preview_col: skip sidebar border(2) + gap(2), then +1 for preview's own left border to get content area
+		local preview_col = col + sidebar_width + 2 + 2 + 1
 
 		preview_buf = vim.api.nvim_create_buf(false, true)
 		vim.bo[preview_buf].bufhidden = "wipe"
