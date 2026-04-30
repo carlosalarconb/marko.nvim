@@ -131,14 +131,28 @@ function M.update_preview(mark)
 	local ns_id = require("marko.config").get_namespace()
 	vim.api.nvim_buf_clear_namespace(preview_buf, ns_id, 0, -1)
 
+	-- Set filetype for syntax highlighting
+	local filetype = vim.filetype.match({ filename = file_path })
+	if filetype then
+		vim.bo[preview_buf].filetype = filetype
+	end
+
 	vim.bo[preview_buf].modifiable = true
 	local lines = {}
 	for _, item in ipairs(content) do
-		table.insert(lines, string.format("%5d │ %s", item.num, item.text))
+		table.insert(lines, item.text)
 	end
 
 	vim.api.nvim_buf_set_lines(preview_buf, 0, -1, false, lines)
 	vim.bo[preview_buf].modifiable = false
+
+	-- Add virtual line numbers with actual file line numbers
+	for i, item in ipairs(content) do
+		vim.api.nvim_buf_set_extmark(preview_buf, ns_id, i - 1, 0, {
+			virt_text = { { string.format("%6d ", item.num), "LineNr" } },
+			virt_text_pos = "inline",
+		})
+	end
 
 	-- Highlight the bookmarked line
 	if highlight_index then
@@ -150,10 +164,12 @@ function M.update_preview(mark)
 		vim.api.nvim_win_set_cursor(preview_win, { highlight_index, 0 })
 	end
 
-	-- Update preview window title to show filename
-	if preview_win and vim.api.nvim_win_is_valid(preview_win) and file_path then
+	-- Update preview window title to show filename and line range
+	if preview_win and vim.api.nvim_win_is_valid(preview_win) and file_path and #content > 0 then
 		local filename = vim.fn.fnamemodify(file_path, ":t")
-		vim.api.nvim_win_set_config(preview_win, { title = " " .. filename .. " " })
+		local start_line = content[1].num
+		local end_line = content[#content].num
+		vim.api.nvim_win_set_config(preview_win, { title = string.format(" %s (%d-%d) ", filename, start_line, end_line) })
 	end
 end
 
@@ -235,7 +251,6 @@ function M.create(marks)
 
 		preview_buf = vim.api.nvim_create_buf(false, true)
 		vim.bo[preview_buf].bufhidden = "wipe"
-		vim.bo[preview_buf].filetype = "marko-preview"
 
 		preview_win = vim.api.nvim_open_win(preview_buf, false, {
 			relative = "editor",
@@ -253,6 +268,8 @@ function M.create(marks)
 
 		vim.wo[preview_win].winhl = winhl
 		vim.wo[preview_win].cursorline = true
+		vim.wo[preview_win].wrap = false
+		vim.wo[preview_win].linebreak = false
 	end
 
 	return popup_buf, popup_win
