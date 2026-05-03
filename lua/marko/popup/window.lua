@@ -193,9 +193,9 @@ function M.create(marks)
 	local right_width = config.preview.width  -- Right panel keeps original width
 	local height = config.height
 
-	-- Calculate total width: left panel (with borders) + gap(2) + right panel (with borders)
+	-- Calculate total width: left panel (with borders) + gap(0) + right panel (with borders)
 	-- Each panel border takes 2 columns (1 left + 1 right)
-	local total_width = (left_width + 2) + 2 + (right_width + 2)
+	local total_width = (left_width + 2) + 0 + (right_width + 2)
 
 	-- Position
 	local row = math.ceil((vim.o.lines - height) / 2)
@@ -244,10 +244,10 @@ function M.create(marks)
 
 	-- Create preview window if enabled
 	if preview_enabled then
-		-- Right window content starts after: left window right border + gap(2)
+		-- Right window content starts after: left window right border + gap(0)
 		-- Left window right border is at: left_col + left_width + 2
-		-- Add gap of 2, then +1 to skip right window's own left border
-		local right_content_col = left_col + (left_width + 2) + 2 + 1
+		-- Add gap of 0, then +1 to skip right window's own left border
+		local right_content_col = left_col + (left_width + 2) + 0 + 1
 
 		preview_buf = vim.api.nvim_create_buf(false, true)
 		vim.bo[preview_buf].bufhidden = "wipe"

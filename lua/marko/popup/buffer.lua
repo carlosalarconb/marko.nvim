@@ -21,7 +21,7 @@ local function generate_header(marks)
 
 	local width
 	if config.preview.enabled then
-		width = config.preview.left_width or 200  -- Left panel configurable
+		width = config.preview.left_width or 200 -- Left panel configurable
 	else
 		width = config.width
 	end
@@ -48,7 +48,8 @@ local function generate_column_headers()
 	local col_line = string.rep(" ", config.columns.line - 4) .. "Line"
 	local col_file = "File"
 
-	local header_line = string.format("  %s %s %s %s %s", col_mark, icons.icons.separator, col_line, icons.icons.separator, col_file)
+	local header_line =
+		string.format("%s %s %s %s %s", col_mark, icons.icons.separator, col_line, icons.icons.separator, col_file)
 
 	-- Truncate to panel width (left panel configurable)
 	local max_width
@@ -109,7 +110,7 @@ function M.generate_separator()
 	local width
 
 	if config.preview.enabled then
-		width = config.preview.left_width or 200  -- Left panel configurable
+		width = config.preview.left_width or 200 -- Left panel configurable
 	else
 		width = config.width
 		if width < 80 then
