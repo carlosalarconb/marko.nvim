@@ -17,16 +17,12 @@ local function generate_header(marks)
 		end
 	end
 
-	local mode_text = config.navigation_mode == "direct" and "Direct" or "Popup"
-
 	local width
 	if config.preview.enabled then
 		width = config.preview.left_width or 200 -- Left panel configurable
 	else
 		width = config.width
 	end
-
-	local mode_line = string.format("%s%s", string.rep(" ", math.floor((width - #mode_text) / 2)), mode_text)
 
 	local stats = string.format("  %d Global %s %d Buffer", global_count, icons.icons.separator, buffer_count)
 

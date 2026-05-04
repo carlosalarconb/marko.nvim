@@ -189,8 +189,8 @@ function M.create(marks)
 	vim.bo[popup_buf].filetype = "marko-popup"
 
 	-- Window dimensions
-	local left_width = config.preview.left_width or 200  -- Left panel configurable, default 200px
-	local right_width = config.preview.width  -- Right panel keeps original width
+	local left_width = config.preview.left_width or 200 -- Left panel configurable, default 200px
+	local right_width = config.preview.width -- Right panel keeps original width
 	local height = config.height
 
 	-- Calculate total width: left panel (with borders) + gap(0) + right panel (with borders)
@@ -199,7 +199,7 @@ function M.create(marks)
 
 	-- Position
 	local row = math.ceil((vim.o.lines - height) / 2)
-	local left_col = math.ceil((vim.o.columns - total_width) / 2)  -- Start of left window (with border)
+	local left_col = math.ceil((vim.o.columns - total_width) / 2) -- Start of left window (with border)
 
 	-- Create shadow window only when preview is disabled
 	if not preview_enabled then
@@ -207,8 +207,7 @@ function M.create(marks)
 	end
 
 	-- Create window title
-	local mode_text = config.navigation_mode == "direct" and "Direct" or "Popup"
-	local window_title = config.title .. "- " .. mode_text .. " "
+	local window_title = config.title
 
 	-- Create main window (left pane)
 	-- left_col is the start of the window INCLUDING its left border
@@ -218,7 +217,7 @@ function M.create(marks)
 		width = left_width,
 		height = height,
 		row = row,
-		col = left_col + 1,  -- +1 to skip left border
+		col = left_col + 1, -- +1 to skip left border
 		border = config.border,
 		title = window_title,
 		title_pos = "center",
