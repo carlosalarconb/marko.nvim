@@ -44,8 +44,8 @@ local function generate_column_headers()
 	local icons = require("marko.icons")
 	local config = require("marko.config").get()
 
-	local col_mark = string.rep(" ", config.columns.mark - 1) .. "M"
-	local col_line = string.rep(" ", config.columns.line - 4) .. "Line"
+	local col_mark = string.rep(" ", config.columns.mark - 2) .. "M"
+	local col_line = string.rep(" ", config.columns.line - 6) .. "Line"
 	local col_file = "File"
 
 	local header_line =
