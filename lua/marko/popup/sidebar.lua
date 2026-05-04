@@ -127,9 +127,7 @@ local function update_preview(mark)
 	-- Update preview window title to show filename and line range
 	if preview_win and vim.api.nvim_win_is_valid(preview_win) and file_path and #content > 0 then
 		local filename = vim.fn.fnamemodify(file_path, ":t")
-		local start_line = content[1].num
-		local end_line = content[#content].num
-		vim.api.nvim_win_set_config(preview_win, { title = string.format(" %s (%d-%d) ", filename, start_line, end_line) })
+		vim.api.nvim_win_set_config(preview_win, { title = " " .. filename .. " " })
 	end
 end
 

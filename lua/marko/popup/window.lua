@@ -169,7 +169,7 @@ function M.update_preview(mark)
 		local filename = vim.fn.fnamemodify(file_path, ":t")
 		local start_line = content[1].num
 		local end_line = content[#content].num
-		vim.api.nvim_win_set_config(preview_win, { title = string.format(" %s (%d-%d) ", filename, start_line, end_line) })
+		vim.api.nvim_win_set_config(preview_win, { title = " " .. filename .. " " })
 	end
 end
 
