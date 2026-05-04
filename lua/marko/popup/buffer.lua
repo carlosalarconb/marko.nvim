@@ -78,9 +78,9 @@ local function generate_status_bar()
 
 	local status_text = ""
 	if config.navigation_mode == "popup" then
-		status_text = string.format("  j/k ↕  d %s  Esc/' %s  ; Direct Mode", icons.icons.delete, icons.icons.escape)
+		status_text = string.format("  j/k ↕  d %s  Esc/' %s", icons.icons.delete, icons.icons.escape)
 	else
-		status_text = string.format("  Press mark key to jump  Esc/' %s  ; Popup Mode", icons.icons.escape)
+		status_text = string.format("  Press mark key to jump  Esc/' %s", icons.icons.escape)
 	end
 
 	-- Truncate status text to fit panel width (left panel configurable)

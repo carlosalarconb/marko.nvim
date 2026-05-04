@@ -32,12 +32,6 @@ function M.setup(opts)
 		end, { desc = "Toggle marks sidebar" })
 	end
 
-	if config.direct_mode.mode_toggle_key then
-		vim.keymap.set("n", config.direct_mode.mode_toggle_key, function()
-			M.toggle_navigation_mode()
-		end, { desc = "Toggle navigation mode (popup/direct)" })
-	end
-
 	vim.api.nvim_create_autocmd("ColorScheme", {
 		callback = function()
 			require("marko.config").refresh_highlights()
