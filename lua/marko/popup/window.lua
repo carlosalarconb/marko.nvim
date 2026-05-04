@@ -222,7 +222,7 @@ function M.create(marks)
 		title = window_title,
 		title_pos = "center",
 		style = "minimal",
-		zindex = 2,
+		zindex = 50,
 	})
 
 	-- Set window options with custom highlights based on mode
@@ -262,7 +262,7 @@ function M.create(marks)
 			title_pos = "center",
 			style = "minimal",
 			focusable = false,
-			zindex = 2,
+			zindex = 50,
 		})
 
 		vim.wo[preview_win].winhl = winhl

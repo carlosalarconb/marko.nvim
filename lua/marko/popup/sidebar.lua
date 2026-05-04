@@ -214,7 +214,7 @@ function M.create()
 		border = config.border,
 		style = "minimal",
 		focusable = true,
-		zindex = 2,
+		zindex = 50,
 	})
 
 	-- Set window options
@@ -241,7 +241,7 @@ function M.create()
 			title_pos = "center",
 			style = "minimal",
 			focusable = false,
-			zindex = 2,
+			zindex = 50,
 		})
 
 		vim.wo[preview_win].winhl = string.format("Normal:MarkoNormal,FloatBorder:%s", border_hl)
